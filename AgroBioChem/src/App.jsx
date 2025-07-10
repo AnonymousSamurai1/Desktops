@@ -31,7 +31,7 @@ const Container = styled.div`
   margin: 0;
   display: flex;
   height: 100vh;
-  justify-content: center; /* horizontal */
+  justify-content: center; 
   align-items: center;
   .logo-main {
     width: 600px;

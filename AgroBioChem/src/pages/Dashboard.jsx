@@ -1,83 +1,62 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
-import { motion } from "framer-motion";
-import { BarLoader } from "react-spinners";
-import Fade from "react-reveal";
-import LoaderImage from "../assets/Logo.svg";
+import Home from "../components/Home";
+import Question from "../components/Question";
 
 function Dashboard() {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setLoading(false), 3000);
-    return () => clearTimeout(timeout); 
-  }, []);
+  const [currentPage, setCurrentPage] = useState("home");
+  const navigate = (page) => {
+    setCurrentPage(page);
+  };
 
   return (
     <Container>
-      {loading ? (
-        <div className="loader">
-          <div className="main_loader">
-            <motion.img
-              src={LoaderImage}
-              alt="Loading..."
-              transition={{ repeat: 5, duration: 1, repeatType: "reverse" }}
-              className="imageloader"
-            />
-          </div>
+      <div className="navigation">
+        <nav>
+          <ol>
+            <li onClick={() => navigate("home")}>Home</li>
+            <li onClick={() => navigate("question")}>Questions</li>
+            <li>Products</li>
+          </ol>
+        </nav>
+      </div>
 
-          <BarLoader
-            color="green"
-            loading={loading}
-            height={4}
-            width={150}
-            className="barloader"
-          />
-        </div>
-      ) : (
-        <Fade>
-          <h1>Home</h1>
-        </Fade>
-      )}
+      <div className="category">
+        {currentPage === "home" && <Home />}
+        {currentPage === "question" && <Question />}
+      </div>
     </Container>
   );
 }
 
 const Container = styled.div`
-  .loader {
-    position: absolute;
-    top: 30%;
-    left: 28%;
+  display: flex;
+  .navigation{
+  background: green;
+  width: 30%;
+  height: 100vh;
+  }
+  nav {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .main_loader {
-    margin-bottom: 10%;
-  }
-
-  .imageloader {
-    width: 700px;
-  }
-
-  .barloader {
-    position: relative;
-  }
-
-  @media (max-width: 760px) {
-    .loader {
-      left: 25%;
-    }
-
-    .imageloader {
-      width: 200px;
-    }
-
-    .barloader {
-      left: 10%;
+    margin: 0;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+    ol {
+      text-decoration: none;
+      list-style-type: none;
+      li {
+        color: white;
+        padding: 20% 0%;
+        font-family: "Poppins", sans-serif;
+      }
+      li:hover {
+        cursor: pointer;
+        color: yellow;
+        transform: scale(1.1);
+        transition: 0.3s (ease-in-out);
+      }
     }
   }
 `;
-
 export default Dashboard;
