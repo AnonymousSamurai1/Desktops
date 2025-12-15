@@ -1,18 +1,113 @@
-import React, { useState } from "react";
-import styled from "styled-components";
-import Logo from "../assets/logo2.png";
-import { Fade } from "react-reveal";
-import Username from "../assets/username.png";
-import Password from "../assets/password.png";
-import { Link } from "react-router-dom";
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import Logo from '../assets/logo2.png';
+import { Fade } from 'react-reveal';
+import Username from '../assets/username.png';
+import Password from '../assets/password.png';
+import Email from '../assets/mail.png';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
-const Home = () => {
+const Credentials = () => {
   const [register, setRegister] = useState(false);
-  const registerAccept = () => {
-    return setRegister(true);
+
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+
+  const [fullname, setFullname] = useState('');
+  const [dob, setDob] = useState('');
+  const [gender, setGender] = useState('');
+  const [location, setLocation] = useState('');
+  const [contact, setContact] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+
+  const navigate = useNavigate();
+
+  const handleLogin = async (event) => {
+    event.preventDefault();
+
+    if (!loginEmail || !loginPassword) {
+      toast.error('Email or Password must be provided');
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        'http://localhost:5612/agrobiochem/api/admins/login',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('fullname', data.admin.fullname);
+        toast.success('Login Successful');
+        navigate('/dash');
+      } else {
+        toast.error('Invalid Email or Password');
+      }
+    } catch (error) {
+      toast.error('Something went wrong');
+    } finally {
+      setLoginPassword('');
+    }
   };
-  const registerRemove = () => {
-    return setRegister(false);
+
+  const handleSignup = async (event) => {
+    event.preventDefault();
+
+    if (
+      !fullname ||
+      !dob ||
+      !gender ||
+      !location ||
+      !contact ||
+      !signupEmail ||
+      !signupPassword
+    ) {
+      toast.error('Please fill all the fields');
+      return;
+    }
+
+    try {
+      const res = await fetch('http://localhost:5612/agrobiochem/api/admins/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullname,
+          dob,
+          gender,
+          location,
+          contact,
+          email: signupEmail,
+          password: signupPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        toast.success('Signup Successful');
+        setRegister(false);
+        setFullname("");
+        setDob("");
+        setGender("");
+        setLocation("");
+        setContact("");
+        setSignupEmail("");
+        setSignupPassword("");
+      } else {
+        toast.error(data.message || 'Signup failed');
+      }
+    } catch (error) {
+      toast.error('Something went wrong during signup');
+    }
   };
 
   return (
@@ -23,112 +118,147 @@ const Home = () => {
             <img src={Logo} alt="logo" className="logo" />
           </Fade>
         </div>
-        <div className="credentials">
+        <div className="credentials" id="login">
           <h1 className="title">Login</h1>
 
-          <form action="" className="login">
+          <form onSubmit={handleLogin} className="login">
             <div className="credential-main">
               <div className="credential-image">
                 <img src={Username} alt="username" />
               </div>
               <input
                 type="email"
-                name="email"
+                name="loginEmail"
                 className="username"
                 placeholder="username / email"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
               />
             </div>
             <div className="credential-main">
               <div className="credential-image">
-                <img src={Password} alt="username" />
+                <img src={Password} alt="password" />
               </div>
               <input
                 type="password"
-                name="password"
+                name="loginPassword"
                 placeholder="password"
-                className=""
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
               />
             </div>
             <div className="submit">
-              <Link to="/dash"><input type="button" value="Login" className="login-button" /></Link>
+              <input type="submit" value="Login" className="login-button" />
             </div>
           </form>
 
           <p className="register-link">
-            New as an admin? <span onClick={registerAccept}>Register</span>
+            New as an admin?{' '}
+            <span onClick={() => setRegister(true)}>Register</span>
           </p>
+
           {register && (
-            <Fade>
-              <div className="registration">
-                <h1 className="title1">SignUp</h1>
+            <div className="registration">
+              <h1 className="title1">SignUp</h1>
 
-                <form action="" className="login">
-                  <div className="credential-main1">
-                    <div className="credential-image1">
-                      <img src={Username} alt="username" />
-                    </div>
-                    <input type="text" name="fullname" placeholder="fullname" />
+              <form onSubmit={handleSignup} className="login">
+                <div className="credential-main1">
+                  <div className="credential-image1">
+                    <img src={Username} alt="fullname" />
                   </div>
+                  <input
+                    type="text"
+                    name="fullname"
+                    placeholder="Fullname"
+                    value={fullname}
+                    onChange={(e) => setFullname(e.target.value)}
+                  />
+                </div>
 
-                  <div className="credential-main2">
-                    <div className="date">
-                      <input type="date" name="" id="" />
-                    </div>
-                    <div className="select">
-                      <select name="Gender" className="gender">
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="credential-main2">
-                    <div className="date">
-                      <input type="text" name="Location" placeholder="Enter your Location" />
-                    </div>
-                    <div className="select">
-                      <input type="text" name="Contact" placeholder="Contact" />
-                    </div>
-                  </div>
-
-                  <div className="credential-main1">
-                    <div className="credential-image1">
-                      <img src={Password} alt="username" />
-                    </div>
+                <div className="credential-main2">
+                  <div className="date">
                     <input
-                      type="email"
-                      name="email"
-                      placeholder="Email"
-                      className=""
+                      type="date"
+                      name="dob"
+                      value={dob}
+                      onChange={(e) => setDob(e.target.value)}
                     />
                   </div>
+                  <div className="select">
+                    <select
+                      name="gender"
+                      className="gender"
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </div>
+                </div>
 
-                  <div className="credential-main1">
-                    <div className="credential-image1">
-                      <img src={Password} alt="username" />
-                    </div>
+                <div className="credential-main2">
+                  <div className="date">
                     <input
-                      type="password"
-                      name="password"
-                      placeholder="Password"
-                      className=""
+                      type="text"
+                      name="location"
+                      placeholder="Enter your Location"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
                     />
                   </div>
-
-                  <div className="submit1">
+                  <div className="select">
                     <input
-                      type="button"
-                      value="Register"
-                      className="login-button"
+                      type="text"
+                      name="contact"
+                      placeholder="Contact"
+                      value={contact}
+                      onChange={(e) => setContact(e.target.value)}
                     />
                   </div>
-                </form>
-                <p className="register-link">
-                  Already Registered?{" "}
-                  <span onClick={registerRemove}>Sign In</span>
-                </p>
-              </div>
-            </Fade>
+                </div>
+
+                <div className="credential-main1">
+                  <div className="credential-image1">
+                    <img src={Email} alt="email" />
+                  </div>
+                  <input
+                    type="email"
+                    name="signupEmail"
+                    placeholder="Email"
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                  />
+                </div>
+
+                <div className="credential-main1">
+                  <div className="credential-image1">
+                    <img src={Password} alt="password" />
+                  </div>
+                  <input
+                    type="password"
+                    name="signupPassword"
+                    placeholder="Password"
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
+                  />
+                </div>
+
+                <div className="submit1">
+                  <input
+                    type="submit"
+                    value="Register"
+                    className="login-button"
+                  />
+                </div>
+              </form>
+
+              <p className="register-link">
+                Already Registered?{' '}
+                <span onClick={() => setRegister(false)}>Sign In</span>
+              </p>
+            </div>
           )}
         </div>
       </Fade>
@@ -152,7 +282,7 @@ const Container = styled.div`
   }
   .title {
     color: white;
-    font-family: "Poppins", sans-serif;
+    font-family: 'Poppins', sans-serif;
     text-align: center;
     padding: 20% 0% 3% 0%;
     font-size: 50px;
@@ -172,7 +302,7 @@ const Container = styled.div`
       border-radius: 10px;
       outline: none;
       color: gray;
-      font-family: "Poppins", sans-serif;
+      font-family: 'Poppins', sans-serif;
     }
   }
   .credential-image {
@@ -192,15 +322,15 @@ const Container = styled.div`
       font-weight: bold;
       color: green;
     }
-    .login-button:hover {
-      cursor: pointer;
-      transform: scale(1.1);
-    }
+  }
+  .login-button:hover {
+    cursor: pointer;
+    transform: scale(1.1);
   }
   .register-link {
     text-align: center;
     color: white;
-    font-family: "Poppins", sans-serif;
+    font-family: 'Poppins', sans-serif;
     span {
       color: yellow;
     }
@@ -218,7 +348,7 @@ const Container = styled.div`
   }
   .title1 {
     color: white;
-    font-family: "Poppins", sans-serif;
+    font-family: 'Poppins', sans-serif;
     text-align: center;
     padding: 5% 0% 1% 0%;
     font-size: 50px;
@@ -235,30 +365,29 @@ const Container = styled.div`
       border-radius: 10px;
       outline: none;
       color: gray;
-      font-family: "Poppins", sans-serif;
+      font-family: 'Poppins', sans-serif;
     }
-    
   }
   .credential-main2 {
     display: flex;
     width: 30%;
     padding: 4% 6.5%;
-    .date{
+    .date {
       padding: 0% 10%;
       input {
-      width: 200px;
-      height: 50px;
-      padding: 0% 5%;
-      border: none;
-      border-radius: 10px;
-      outline: none;
-      color: gray;
-      font-family: "Poppins", sans-serif;
+        width: 200px;
+        height: 50px;
+        padding: 0% 5%;
+        border: none;
+        border-radius: 10px;
+        outline: none;
+        color: gray;
+        font-family: 'Poppins', sans-serif;
       }
     }
-    .select{
+    .select {
       padding: 0% 10%;
-      .gender{
+      .gender {
         width: 200px;
         height: 50px;
         padding: 0% 10% 0% 5%;
@@ -266,17 +395,15 @@ const Container = styled.div`
         border-radius: 10px;
         outline: none;
         color: gray;
-        font-family: "Poppins", sans-serif; 
-        appearance: none; 
+        font-family: 'Poppins', sans-serif;
+        appearance: none;
         -webkit-appearance: none;
         -moz-appearance: none;
-        background: url("data:image/svg+xml;utf8,<svg fill='gray' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>")
-        no-repeat right 10px center;
         background-color: white;
         background-size: 20px;
         cursor: pointer;
       }
-      input{
+      input {
         width: 190px;
         height: 50px;
         padding: 0% 0% 0% 5%;
@@ -284,19 +411,17 @@ const Container = styled.div`
         border-radius: 10px;
         outline: none;
         color: gray;
-        font-family: "Poppins", sans-serif; 
+        font-family: 'Poppins', sans-serif;
       }
-    }  
-    
+    }
   }
-    
   .credential-image1 {
     padding: 2% 2%;
     img {
       width: 30px;
     }
   }
-    .submit1 {
+  .submit1 {
     padding: 3% 23%;
     .login-button {
       width: 300px;
@@ -307,6 +432,7 @@ const Container = styled.div`
       font-weight: bold;
       color: green;
     }
+  }
 `;
 
-export default Home;
+export default Credentials;

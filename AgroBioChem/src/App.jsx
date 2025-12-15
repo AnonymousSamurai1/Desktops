@@ -1,25 +1,65 @@
-import { style } from "framer-motion/client";
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
-import Logo from "./assets/Logo.svg";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import Loader from "./assets/logo2.png";
 import { Link } from "react-router-dom";
 
 function App() {
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const handleSecret = async (event) => {
+    event.preventDefault();
+
+    if (!password) {
+      toast.error("Password must be provided");
+      setPassword("");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        "http://localhost:5612/agrobiochem/api/keys/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem("token", data.token);
+        toast.success("Login Successful");
+        navigate("/authen");
+      } else {
+        toast.error("Invalid Password");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setPassword("");
+    }
+  };
   return (
     <Container>
       <div className="key-main">
-        <img src={Logo} alt="logo" className="logo-main" />
-        <form action="" >
+        <img src={Loader} alt="logo" className="logo-main" />
+        <form onSubmit={handleSecret}>
           <div className="key-sub">
             <input
-            type="text"
-            name="key"
-            className="key"
-            placeholder="Enter the Key"
-          />
+              type="password"
+              name="key"
+              className="key"
+              placeholder="Enter the Key"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </div>
           <div className="key-sub1">
-            <Link to="/authen"><input type="button" value="Connect" className="key-button"/></Link>
+            <input type="submit" value="Connect" className="key-button" />
           </div>
         </form>
       </div>
@@ -31,7 +71,7 @@ const Container = styled.div`
   margin: 0;
   display: flex;
   height: 100vh;
-  justify-content: center; 
+  justify-content: center;
   align-items: center;
   .logo-main {
     width: 600px;
@@ -55,7 +95,7 @@ const Container = styled.div`
       color: grey;
     }
   }
-  .key-sub1{
+  .key-sub1 {
     padding: 5% 33%;
     .key-button {
       width: 300px;
@@ -72,7 +112,7 @@ const Container = styled.div`
     .key-sub1::placeholder {
       color: white;
     }
-    .key-button:hover{
+    .key-button:hover {
       cursor: pointer;
       transform: scale(1.1);
     }
